@@ -6,45 +6,31 @@ def get_network_architecture(chosen_architecture, X, y):
     """
     Given a chosen architecture, initializes a MLPClassifier with the appropriate number
     of layers and neurons per layer, and calculates the total number of weights (dimensions).
-    
-    Args:
-        chosen_architecture: Tuple of integers representing hidden layer sizes.
-                            Example: (10,) for 1 hidden layer with 10 neurons
-                                     (10, 5) for 2 hidden layers with 10 and 5 neurons
-        X: Input feature matrix of shape (n_samples, n_features)
-        y: Target labels
-    
-    Returns:
-        model: Initialized MLPClassifier with the specified architecture
-        n_dimensions: Total number of weights and biases in the network
     """
     # Determine network dimensions
     n_input = X.shape[1]
     n_output = len(np.unique(y))
     
-    # Create the full layer architecture: input -> hidden layers -> output
+    # Create the full layer architecture
     layer_sizes = [n_input] + list(chosen_architecture) + [n_output]
     
-    # Initialize MLPClassifier with the hidden layer sizes (not including input/output)
+    # Initialize MLPClassifier with the hidden layer sizes 
     model = MLPClassifier(
         hidden_layer_sizes=chosen_architecture,
         max_iter=1000,
         random_state=42,
-        warm_start=False
-    )
+        warm_start=False)
     
-    # Fit the model once to initialize weights (required for weight extraction)
+    # Fit the model once to initialize weights 
     model.fit(X, y)
     
-    # Calculate total number of weights and biases
-    # For each layer transition: weights + biases
+    # Calculate total number of weights and biases (sum for each transition between layers)
     n_dimensions = 0
     for i in range(len(layer_sizes) - 1):
-        # Weights between layer i and layer i+1
+        # Weights 
         n_dimensions += layer_sizes[i] * layer_sizes[i + 1]
-        # Biases for layer i+1
-        n_dimensions += layer_sizes[i + 1]
-    
+        # Biases 
+        n_dimensions += layer_sizes[i + 1] 
     return model, n_dimensions
 
 def generate_solution(n_dimensions, initialization_method = 'uniform', low = -1, high = 1):
@@ -55,23 +41,17 @@ def generate_solution(n_dimensions, initialization_method = 'uniform', low = -1,
     # 1st initialization method: uniform
     if initialization_method == 'uniform':
         return np.random.uniform(low, high, n_dimensions)
-    #2nd initialization method: normal
+    
+    # 2nd initialization method: normal
     elif initialization_method == 'normal':
         return np.random.normal(0,1, n_dimensions)
+    
     else:
         raise ValueError("Invalid initialization method. Choose 'uniform' or 'normal'.")
     
 def vector_to_weights(vector, mlp):
     """
     Converts a flat weight vector into the weights and biases format used by MLPClassifier.
-    
-    Args:
-        vector: Flat array of all weights and biases concatenated
-        mlp: Fitted MLPClassifier object (used to know the expected shapes)
-    
-    Returns:
-        coefs: List of weight matrices for each layer
-        intercepts: List of bias vectors for each layer
     """
     coefs = []
     intercepts = []

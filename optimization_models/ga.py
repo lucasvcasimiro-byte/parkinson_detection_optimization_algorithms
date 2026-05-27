@@ -2,17 +2,15 @@ import numpy as np
 
 
 def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, X, y,
-                      
-                    pop_size=50,
-    generations=100,
-    crossover_rate=0.8,
-    mutation_rate=0.1,
-    selection_func=None,
-    crossover_func=None,
-    mutation_func=None,
-    init_method='uniform',
-    **kwargs
-):
+                      pop_size=50, 
+                      generations=100,
+                      crossover_rate=0.8, 
+                      mutation_rate=0.1,
+                      selection_func = None,
+                      crossover_func = None,
+                      mutation_func = None,
+                      init_method = 'uniform',
+                      **kwargs):
     """
     Genetic Algorithm for continuous neural network weight optimization. Logs history of
     best fitness per generation.
@@ -26,24 +24,25 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
     best_fitness = -float('inf')
     history = []
 
-
-    # Main Generational Loop (Matches professor's pattern)
-    for generation in range(generations):
-        
-        # 2. Evaluate fitness for the current population
-        fitnesses = np.array([fitness_function(individual, model, X, y) for individual in population])
-        
-        # Keep track of the absolute global best solution
+    # Main evolution loop
+    for generation in range(generations):     
         for i in range(pop_size):
+            fitnesses[i] = fitness_function(population[i], model, X, y)
+            # Keep track of the absolute global best solution
             if fitnesses[i] > best_fitness:
                 best_fitness = fitnesses[i]
-                best_solution = population[i].copy()  # Prevents memory cross-contamination
+                best_solution = population[i].copy()  
                 
         history.append(best_fitness)
-        print(f" Generation {generation + 1}/{generations} | Best F1-Score: {best_fitness:.4f}")
 
-        # 3. Breed the next generation
+        # Create next generation
         new_population = []
+        
+
+        ##### A partir daqui ainda ta meio queimado
+
+
+
         
         # Elitism: Directly protect and preserve the best configuration found so far
         new_population.append(best_solution.copy())
@@ -71,5 +70,5 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
         # Transition to the newly generated population
         population = np.array(new_population)
         
-    print(f"\n✓ GA completed. Best Fitness: {best_fitness:.4f}")
+    print(f"Best Fitness: {best_fitness:.4f}")
     return best_solution, best_fitness, history
