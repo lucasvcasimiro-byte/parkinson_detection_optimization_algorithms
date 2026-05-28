@@ -2,22 +2,23 @@ import numpy as np
 
 ### SELECTION OPERATOR
 
-def tournament_selection(population, fitnesses, tournament_size=3):
+def tournament_selection(population, fitnesses, tournament_size=3, **kwargs):
     """
     Selects an individual from the population using tournament selection.
     """
     pop_size = len(population)
+    tournament_size = min(tournament_size, pop_size)
     # Randomly select tournament participants
     participants = np.random.choice(pop_size, tournament_size, replace=False)
 
     # Find best fitness among participants
-    best_idx = participants[np.argmin(fitnesses[participants])]
+    best_idx = participants[np.argmax(fitnesses[participants])]
     return population[best_idx]
 
 
 ### CROSSOVER OPERATORS
 
-def arithmetic_crossover(parent1, parent2):
+def arithmetic_crossover(parent1, parent2, **kwargs):
     """
     Produces two offspring that fall along the line connecting the parents.
     """
@@ -47,7 +48,7 @@ def simulated_binary_crossover(parent1, parent2, eta=2, **kwargs):
 
 ### MUTATION OPERATORS
 
-def gaussian_mutation(individual, mutation_rate=0.01, sigma=0.1, **kwargs):
+def gaussian_mutation(individual, mutation_rate=0.01, sigma=0.1, low=None, high=None, **kwargs):
     """
     Adds small random noise sampled from a Gaussian distribution 
     to selected genes to perform local optimization/tuning.
@@ -56,6 +57,8 @@ def gaussian_mutation(individual, mutation_rate=0.01, sigma=0.1, **kwargs):
     for i in range(len(mutated)):
         if np.random.random() < mutation_rate:
             mutated[i] += np.random.normal(0, sigma)
+    if low is not None or high is not None:
+        mutated = np.clip(mutated, low if low is not None else -np.inf, high if high is not None else np.inf)
     return mutated
 
 def uniform_continuous_mutation(individual, mutation_rate=0.01, low=-1, high=1, **kwargs):

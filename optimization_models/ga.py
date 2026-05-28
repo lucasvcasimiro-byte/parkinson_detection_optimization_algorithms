@@ -1,4 +1,5 @@
 import numpy as np
+from optimization_models.ga_operators import (arithmetic_crossover, gaussian_mutation, tournament_selection)
 
 
 def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, X, y,
@@ -10,13 +11,24 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
                       crossover_func = None,
                       mutation_func = None,
                       init_method = 'uniform',
+                      verbose=True,
                       **kwargs):
     """
     Genetic Algorithm for continuous neural network weight optimization. Logs history of
     best fitness per generation.
     """
+    if selection_func is None:
+        selection_func = tournament_selection
+    if crossover_func is None:
+        crossover_func = arithmetic_crossover
+    if mutation_func is None:
+        mutation_func = gaussian_mutation
+
+    low = kwargs.get('low', -1)
+    high = kwargs.get('high', 1)
+
     # Creating and evaluating population and respective fitnesses
-    population = np.array([generate_solution(n_dimensions, initialization_method=init_method)for _ in range(pop_size)])
+    population = np.array([generate_solution(n_dimensions, initialization_method=init_method, low=low, high=high) for _ in range(pop_size)])
     fitnesses = np.array([fitness_function(individual, model, X, y) for individual in population])
     
     # Evolutionary tracking variables
@@ -37,12 +49,6 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
 
         # Create next generation
         new_population = []
-        
-
-        ##### A partir daqui ainda ta meio queimado
-
-
-
         
         # Elitism: Directly protect and preserve the best configuration found so far
         new_population.append(best_solution.copy())
@@ -70,5 +76,6 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
         # Transition to the newly generated population
         population = np.array(new_population)
         
-    print(f"Best Fitness: {best_fitness:.4f}")
+    if verbose:
+        print(f"Best Fitness: {best_fitness:.4f}")
     return best_solution, best_fitness, history
