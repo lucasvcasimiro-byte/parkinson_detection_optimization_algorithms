@@ -1,0 +1,17 @@
+algorithm,init_method,crossover,mutation,generation,best_fitness
+GA,uniform,arithmetic_crossover,gaussian_mutation,1,0.725534188034188
+GA,uniform,arithmetic_crossover,gaussian_mutation,2,0.725534188034188
+GA,uniform,arithmetic_crossover,uniform_continuous_mutation,1,0.7567195450463934
+GA,uniform,arithmetic_crossover,uniform_continuous_mutation,2,0.7567335796559045
+GA,uniform,simulated_binary_crossover,gaussian_mutation,1,0.6051282051282052
+GA,uniform,simulated_binary_crossover,gaussian_mutation,2,0.6051282051282052
+GA,uniform,simulated_binary_crossover,uniform_continuous_mutation,1,0.694366174430975
+GA,uniform,simulated_binary_crossover,uniform_continuous_mutation,2,0.694366174430975
+GA,normal,arithmetic_crossover,gaussian_mutation,1,0.6236343366778149
+GA,normal,arithmetic_crossover,gaussian_mutation,2,0.6236343366778149
+GA,normal,arithmetic_crossover,uniform_continuous_mutation,1,0.6628667282872891
+GA,normal,arithmetic_crossover,uniform_continuous_mutation,2,0.7141608391608392
+GA,normal,simulated_binary_crossover,gaussian_mutation,1,0.652001522969265
+GA,normal,simulated_binary_crossover,gaussian_mutation,2,0.652001522969265
+GA,normal,simulated_binary_crossover,uniform_continuous_mutation,1,0.651506644207374
+GA,normal,simulated_binary_crossover,uniform_continuous_mutation,2,0.651506644207374

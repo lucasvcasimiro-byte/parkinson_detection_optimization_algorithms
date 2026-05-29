@@ -1,3 +1,6 @@
+import time
+from pathlib import Path
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -82,7 +85,20 @@ def run_ga_experiment(
     return best_solution, best_fitness, history
 
 
-def run_all_operator_combinations():
+def run_all_operator_combinations(
+        chosen_architecture=(10,),
+        pop_size=50,
+        generations=100,
+        crossover_rate=0.8,
+        mutation_rate=0.1,
+        low=-1,
+        high=1,
+        tournament_size=3,
+        sigma=0.1,
+        test_size=0.2,
+        random_state=42,
+        results_dir="results",
+        save_results=True):
     """
     Runs the GA with every combination of initialization, crossover, and mutation.
     """
@@ -97,6 +113,7 @@ def run_all_operator_combinations():
     ]
 
     results = []
+    convergence_rows = []
 
     for init_method in initialization_methods:
         for crossover_name, crossover_func in crossover_operators:
@@ -106,41 +123,71 @@ def run_all_operator_combinations():
                     f'crossover={crossover_name}, mutation={mutation_name}'
                 )
 
-                best_solution, best_fitness, history = run_ga_experiment(
-                    chosen_architecture=(10,),
-                    pop_size=50,
-                    generations=100,
-                    crossover_rate=0.8,
-                    mutation_rate=0.1,
+                start_time = time.perf_counter()
+                best_solution, best_fitness, history, test_metrics = run_ga_experiment(
+                    chosen_architecture=chosen_architecture,
+                    pop_size=pop_size,
+                    generations=generations,
+                    crossover_rate=crossover_rate,
+                    mutation_rate=mutation_rate,
                     init_method=init_method,
                     crossover_func=crossover_func,
                     mutation_func=mutation_func,
-                    low=-1,
-                    high=1,
-                    tournament_size=3,
-                    sigma=0.1,
+                    low=low,
+                    high=high,
+                    tournament_size=tournament_size,
+                    sigma=sigma,
                     verbose=False,
+                    test_size=test_size,
+                    random_state=random_state,
+                    return_metrics=True,
                 )
+                runtime_seconds = time.perf_counter() - start_time
+
+                for generation, fitness in enumerate(history, start=1):
+                    convergence_rows.append({
+                        'algorithm': 'GA',
+                        'init_method': init_method,
+                        'crossover': crossover_name,
+                        'mutation': mutation_name,
+                        'generation': generation,
+                        'best_fitness': fitness,
+                    })
 
                 result = {
+                    'algorithm': 'GA',
+                    'architecture': chosen_architecture,
+                    'pop_size': pop_size,
+                    'generations': generations,
                     'init_method': init_method,
                     'crossover': crossover_name,
                     'mutation': mutation_name,
-                    'best_fitness': best_fitness,
+                    'best_train_fitness': best_fitness,
                     'initial_best_fitness': history[0],
                     'final_best_fitness': history[-1],
+                    'test_weighted_f1': test_metrics['weighted_f1'],
+                    'test_macro_f1': test_metrics['macro_f1'],
+                    'test_balanced_accuracy': test_metrics['balanced_accuracy'],
+                    'test_confusion_matrix': test_metrics['confusion_matrix'],
                     'solution_dimensions': len(best_solution),
+                    'runtime_seconds': runtime_seconds,
                 }
                 results.append(result)
 
                 print(f"Best fitness: {best_fitness:.4f}")
 
-    results = sorted(results, key=lambda item: item['best_fitness'], reverse=True)
+    results = sorted(results, key=lambda item: item['best_train_fitness'], reverse=True)
+
+    if save_results:
+        output_dir = Path(results_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(results).to_csv(output_dir / 'ga_operator_comparison.csv', index=False)
+        pd.DataFrame(convergence_rows).to_csv(output_dir / 'ga_convergence.csv', index=False)
 
     print('\nSummary, ordered by best fitness:')
     for result in results:
         print(
-            f"{result['best_fitness']:.4f} | "
+            f"{result['best_train_fitness']:.4f} | "
             f"init={result['init_method']} | "
             f"crossover={result['crossover']} | "
             f"mutation={result['mutation']}"
