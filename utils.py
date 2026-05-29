@@ -1,19 +1,12 @@
 import numpy as np
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import f1_score
+from sklearn.metrics import balanced_accuracy_score, confusion_matrix, f1_score
 
 def get_network_architecture(chosen_architecture, X, y):
     """
     Given a chosen architecture, initializes a MLPClassifier with the appropriate number
     of layers and neurons per layer, and calculates the total number of weights (dimensions).
     """
-    # Determine network dimensions
-    n_input = X.shape[1]
-    n_output = len(np.unique(y))
-    
-    # Create the full layer architecture
-    layer_sizes = [n_input] + list(chosen_architecture) + [n_output]
-    
     # Initialize MLPClassifier with the hidden layer sizes 
     model = MLPClassifier(
         hidden_layer_sizes=chosen_architecture,
@@ -24,13 +17,11 @@ def get_network_architecture(chosen_architecture, X, y):
     # Fit the model once to initialize weights 
     model.fit(X, y)
     
-    # Calculate total number of weights and biases (sum for each transition between layers)
-    n_dimensions = 0
-    for i in range(len(layer_sizes) - 1):
-        # Weights 
-        n_dimensions += layer_sizes[i] * layer_sizes[i + 1]
-        # Biases 
-        n_dimensions += layer_sizes[i + 1] 
+    # Calculate dimensions from the fitted MLPClassifier's actual parameter shapes
+    n_dimensions = (
+        sum(coef.size for coef in model.coefs_)
+        + sum(intercept.size for intercept in model.intercepts_)
+    )
     return model, n_dimensions
 
 def generate_solution(n_dimensions, initialization_method = 'uniform', low = -1, high = 1):
@@ -53,6 +44,16 @@ def vector_to_weights(vector, mlp):
     """
     Converts a flat weight vector into the weights and biases format used by MLPClassifier.
     """
+    expected_dimensions = (
+        sum(coef.size for coef in mlp.coefs_)
+        + sum(intercept.size for intercept in mlp.intercepts_)
+    )
+    if len(vector) != expected_dimensions:
+        raise ValueError(
+            f"Vector length {len(vector)} does not match expected model "
+            f"parameter count {expected_dimensions}."
+        )
+
     coefs = []
     intercepts = []
     
@@ -93,3 +94,20 @@ def fitness_function(vector, mlp, X, y):
     # Temos de ver qual a melhor metrica para por no average(depende do dataset)
     score = f1_score(y,pred, average='weighted')
     return score
+
+
+def evaluate_solution(vector, mlp, X, y):
+    """
+    Evaluates a weight vector on a dataset and returns multiple classification metrics.
+    """
+    coefs, intercepts = vector_to_weights(vector, mlp)
+    mlp.coefs_ = coefs
+    mlp.intercepts_ = intercepts
+    pred = mlp.predict(X)
+
+    return {
+        'weighted_f1': f1_score(y, pred, average='weighted', zero_division=0),
+        'macro_f1': f1_score(y, pred, average='macro', zero_division=0),
+        'balanced_accuracy': balanced_accuracy_score(y, pred),
+        'confusion_matrix': confusion_matrix(y, pred).tolist(),
+    }

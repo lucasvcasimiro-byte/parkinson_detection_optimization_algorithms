@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from optimization_models.ga import genetic_algorithm
 from optimization_models.ga_operators import (
@@ -8,7 +9,7 @@ from optimization_models.ga_operators import (
     tournament_selection,
     uniform_continuous_mutation,
 )
-from utils import fitness_function, generate_solution, get_network_architecture
+from utils import evaluate_solution, fitness_function, generate_solution, get_network_architecture
 
 
 def run_ga_experiment(
@@ -24,7 +25,10 @@ def run_ga_experiment(
         high=1,
         tournament_size=3,
         sigma=0.1,
-        verbose=True):
+        verbose=True,
+        test_size=0.2,
+        random_state=42,
+        return_metrics=False):
     """
     Runs the Genetic Algorithm to optimize the weights of an MLPClassifier.
     """
@@ -33,15 +37,23 @@ def run_ga_experiment(
     X = parkinson.drop('status', axis=1).values
     y = parkinson['status'].values
 
-    model, n_dimensions = get_network_architecture(chosen_architecture, X, y)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y
+    )
+
+    model, n_dimensions = get_network_architecture(chosen_architecture, X_train, y_train)
 
     best_solution, best_fitness, history = genetic_algorithm(
         generate_solution=generate_solution,
         fitness_function=fitness_function,
         n_dimensions=n_dimensions,
         model=model,
-        X=X,
-        y=y,
+        X=X_train,
+        y=y_train,
         pop_size=pop_size,
         generations=generations,
         crossover_rate=crossover_rate,
@@ -56,6 +68,16 @@ def run_ga_experiment(
         sigma=sigma,
         verbose=verbose,
     )
+
+    test_metrics = evaluate_solution(best_solution, model, X_test, y_test)
+
+    if verbose:
+        print("Test metrics:")
+        for metric_name, metric_value in test_metrics.items():
+            print(f"{metric_name}: {metric_value}")
+
+    if return_metrics:
+        return best_solution, best_fitness, history, test_metrics
 
     return best_solution, best_fitness, history
 
