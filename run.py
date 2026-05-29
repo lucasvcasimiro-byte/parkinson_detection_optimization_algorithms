@@ -12,6 +12,7 @@ from optimization_models.ga_operators import (
     tournament_selection,
     uniform_continuous_mutation,
 )
+from optimization_models.grey_wolf_optimizer import grey_wolf_optimizer
 from utils import evaluate_solution, fitness_function, generate_solution, get_network_architecture
 
 
@@ -69,6 +70,63 @@ def run_ga_experiment(
         high=high,
         tournament_size=tournament_size,
         sigma=sigma,
+        verbose=verbose,
+    )
+
+    test_metrics = evaluate_solution(best_solution, model, X_test, y_test)
+
+    if verbose:
+        print("Test metrics:")
+        for metric_name, metric_value in test_metrics.items():
+            print(f"{metric_name}: {metric_value}")
+
+    if return_metrics:
+        return best_solution, best_fitness, history, test_metrics
+
+    return best_solution, best_fitness, history
+
+
+def run_gwo_experiment(
+        chosen_architecture=(10,),
+        pop_size=50,
+        generations=100,
+        init_method="uniform",
+        low=-1,
+        high=1,
+        test_size=0.2,
+        random_state=42,
+        verbose=True,
+        return_metrics=False):
+    """
+    Runs the Grey Wolf Optimizer to optimize the weights of an MLPClassifier.
+    """
+    parkinson = pd.read_csv('data/parkinsons_preprocessed.csv')
+
+    X = parkinson.drop('status', axis=1).values
+    y = parkinson['status'].values
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=test_size,
+        random_state=random_state,
+        stratify=y
+    )
+
+    model, n_dimensions = get_network_architecture(chosen_architecture, X_train, y_train)
+
+    best_solution, best_fitness, history = grey_wolf_optimizer(
+        generate_solution=generate_solution,
+        fitness_function=fitness_function,
+        n_dimensions=n_dimensions,
+        model=model,
+        X=X_train,
+        y=y_train,
+        pop_size=pop_size,
+        generations=generations,
+        init_method=init_method,
+        low=low,
+        high=high,
         verbose=verbose,
     )
 
