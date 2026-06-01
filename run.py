@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -254,5 +254,56 @@ def run_all_operator_combinations(
     return results
 
 
+def run_statistical_comparison(num_runs=10):
+    """
+    Runs the GA and GWO multiple times to calculate statistical robustness (mean ± std).
+    """
+    print(f"\n--- Running {num_runs} independent executions ---")
+    
+    ga_f1_results = []
+    gwo_f1_results = []
+    
+    for i in range(num_runs):
+        print(f"Execution {i+1}/{num_runs}...")
+        
+        # 1. Run Genetic Algorithm (using a strong configuration)
+        _, _, _, ga_metrics = run_ga_experiment(
+            init_method='uniform',
+            crossover_func=simulated_binary_crossover,
+            mutation_func=gaussian_mutation,
+            verbose=False,       # Turn off printing for each individual run
+            return_metrics=True  # Return the test metrics dictionary
+        )
+        # Extract the weighted F1 score from your evaluate_solution dictionary
+        ga_f1_results.append(ga_metrics['weighted_f1']) 
+        
+        # 2. Run Grey Wolf Optimizer
+        _, _, _, gwo_metrics = run_gwo_experiment(
+            init_method='uniform',
+            verbose=False,
+            return_metrics=True
+        )
+        gwo_f1_results.append(gwo_metrics['weighted_f1'])
+
+    # 3. Calculate Statistics
+    ga_mean, ga_std = np.mean(ga_f1_results), np.std(ga_f1_results)
+    gwo_mean, gwo_std = np.mean(gwo_f1_results), np.std(gwo_f1_results)
+    
+    print("\n==================================================")
+    print("FINAL RESULTS (Weighted F1-Score over Test Set)")
+    print("==================================================")
+    print(f"Genetic Algorithm:    {ga_mean:.4f} ± {ga_std:.4f}")
+    print(f"Grey Wolf Optimizer:  {gwo_mean:.4f} ± {gwo_std:.4f}")
+    print("==================================================")
+    
+    if gwo_mean > ga_mean:
+        print("-> GWO performed better on average!")
+    else:
+        print("-> GA performed better on average!")
+
 if __name__ == '__main__':
+    # If you still want to run the combination tester, leave this uncommented:
     run_all_operator_combinations()
+    
+    # Run the statistical comparison (e.g., 10 times)
+    run_statistical_comparison(num_runs=10)

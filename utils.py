@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, f1_score
 
 def get_network_architecture(chosen_architecture, X, y):
@@ -83,17 +84,25 @@ def vector_to_weights(vector, mlp):
 def fitness_function(vector, mlp, X, y):
     """
     Given a weight vector, loads the weights into the network, runs
-    predictions on the dataset, and returns a value reflecting the predictive performance of the configuration
+    predictions on the dataset, and returns the Matthews Correlation Coefficient
+    to evaluate the predictive performance on this imbalanced dataset.
     """
-    # Convert flat vector to weights and biases
+    # 1. Convert flat vector to weights and biases
     coefs, intercepts = vector_to_weights(vector, mlp)
+    
+    # 2. Inject the weights into the scikit-learn MLP model
     mlp.coefs_ = coefs
     mlp.intercepts_ = intercepts
+    
+    # 3. Make predictions
     pred = mlp.predict(X)
 
-    # Temos de ver qual a melhor metrica para por no average(depende do dataset)
-    score = f1_score(y,pred, average='weighted')
-    return score
+    # 4. Calculate MCC
+    # MCC is highly resilient to imbalanced datasets like Parkinson's.
+    # It ranges from -1 (worst) to 1 (perfect).
+    mcc_score = matthews_corrcoef(y, pred)
+    
+    return mcc_score
 
 
 def evaluate_solution(vector, mlp, X, y):

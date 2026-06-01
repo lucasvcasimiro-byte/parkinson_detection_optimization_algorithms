@@ -48,25 +48,37 @@ def simulated_binary_crossover(parent1, parent2, eta=2, **kwargs):
 
 ### MUTATION OPERATORS
 
-def gaussian_mutation(individual, mutation_rate=0.01, sigma=0.1, low=None, high=None, **kwargs):
+def gaussian_mutation(solution, mutation_rate, low=-1, high=1, sigma=0.1, **kwargs):
     """
-    Adds small random noise sampled from a Gaussian distribution 
-    to selected genes to perform local optimization/tuning.
+    Mutates a solution by adding Gaussian noise to its genes.
     """
-    mutated = np.copy(individual)
-    for i in range(len(mutated)):
-        if np.random.random() < mutation_rate:
-            mutated[i] += np.random.normal(0, sigma)
-    if low is not None or high is not None:
-        mutated = np.clip(mutated, low if low is not None else -np.inf, high if high is not None else np.inf)
-    return mutated
+    # Create a copy so we don't modify the original parent directly
+    mutated_solution = np.copy(solution)
+    
+    # Iterate through each weight (gene) in the solution
+    for i in range(len(mutated_solution)):
+        if np.random.rand() < mutation_rate:
+            # Add random Gaussian noise
+            mutated_solution[i] += np.random.normal(0, sigma)
+            
+    # --- BOUNDARY CHECK ---
+    # Force any exploding weights back inside the [low, high] limits
+    mutated_solution = np.clip(mutated_solution, low, high)
+    
+    return mutated_solution
 
-def uniform_continuous_mutation(individual, mutation_rate=0.01, low=-1, high=1, **kwargs):
+def uniform_continuous_mutation(solution, mutation_rate, low=-1, high=1, **kwargs):
     """
-    Completely replaces selected genes with new random values drawn from a uniform scale.
+    Mutates a solution by replacing genes with a random uniform value.
     """
-    mutated = np.copy(individual)
-    for i in range(len(mutated)):
-        if np.random.random() < mutation_rate:
-            mutated[i] = np.random.uniform(low, high)
-    return mutated
+    mutated_solution = np.copy(solution)
+    
+    for i in range(len(mutated_solution)):
+        if np.random.rand() < mutation_rate:
+            # Replace the weight with a completely new random value within bounds
+            mutated_solution[i] = np.random.uniform(low, high)
+            
+    # --- BOUNDARY CHECK (Failsafe) ---
+    mutated_solution = np.clip(mutated_solution, low, high)
+    
+    return mutated_solution
