@@ -27,6 +27,19 @@ def arithmetic_crossover(parent1, parent2, **kwargs):
     child2 = alpha * parent2 + (1 - alpha) * parent1
     return child1, child2
 
+def one_point_crossover(parent1, parent2, **kwargs):
+
+    # Randomly pick a crossover point
+    xover_point = np.random.randint(1, len(parent1) - 1)
+
+    # when parent1 and parent 2 love each other very much...
+    # note: np.concatenate instead of + because these are numpy arrays, not lists
+    child1 = np.concatenate([parent1[:xover_point], parent2[xover_point:]])
+    child2 = np.concatenate([parent2[:xover_point], parent1[xover_point:]])
+
+    # returning the offspring
+    return child1, child2
+
 def simulated_binary_crossover(parent1, parent2, eta=2, **kwargs):
     """
     Performs simulated binary crossover (SBX) between two parents.

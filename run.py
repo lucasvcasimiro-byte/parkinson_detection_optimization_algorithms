@@ -27,7 +27,9 @@ from utils import evaluate_solution, fitness_function, generate_solution, get_ne
 # ---------------------------------------------------------------------------
 
 def _load_data(test_size=0.2, random_state=42):
-    """Loads and splits the Parkinson's dataset."""
+    """
+    Loads and splits the Parkinson's dataset
+    """
     parkinson = pd.read_csv('data/parkinsons_preprocessed.csv')
     X = parkinson.drop('status', axis=1).values
     y = parkinson['status'].values
