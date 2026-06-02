@@ -6,7 +6,7 @@ from sklearn.metrics import balanced_accuracy_score, confusion_matrix, f1_score
 def get_network_architecture(chosen_architecture, X, y):
     """
     Given a chosen architecture, initializes a MLPClassifier with the appropriate number
-    of layers and neurons per layer, and calculates the total number of weights (dimensions).
+    of layers and neurons per layer, and calculates the total number of weights (dimensions)
     """
     # Initialize MLPClassifier with the hidden layer sizes 
     model = MLPClassifier(
@@ -28,7 +28,7 @@ def get_network_architecture(chosen_architecture, X, y):
 def generate_solution(n_dimensions, initialization_method = 'uniform', low = -1, high = 1):
     """
     Produces a random weight vector of the appropriate length for the
-    chosen network architecture.
+    chosen network architecture
     """
     # 1st initialization method: uniform
     if initialization_method == 'uniform':
@@ -43,7 +43,7 @@ def generate_solution(n_dimensions, initialization_method = 'uniform', low = -1,
     
 def vector_to_weights(vector, mlp):
     """
-    Converts a flat weight vector into the weights and biases format used by MLPClassifier.
+    Converts a flat weight vector into the weights and biases format used by MLPClassifier
     """
     expected_dimensions = (
         sum(coef.size for coef in mlp.coefs_)
@@ -85,7 +85,7 @@ def fitness_function(vector, mlp, X, y):
     """
     Given a weight vector, loads the weights into the network, runs
     predictions on the dataset, and returns the Matthews Correlation Coefficient
-    to evaluate the predictive performance on this imbalanced dataset.
+    to evaluate the predictive performance on this imbalanced dataset
     """
     # 1. Convert flat vector to weights and biases
     coefs, intercepts = vector_to_weights(vector, mlp)
@@ -107,7 +107,7 @@ def fitness_function(vector, mlp, X, y):
 
 def evaluate_solution(vector, mlp, X, y):
     """
-    Evaluates a weight vector on a dataset and returns multiple classification metrics.
+    Evaluates a weight vector on a dataset and returns multiple classification metrics
     """
     coefs, intercepts = vector_to_weights(vector, mlp)
     mlp.coefs_ = coefs
