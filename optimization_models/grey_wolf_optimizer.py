@@ -19,14 +19,16 @@ def grey_wolf_optimizer(
     """
     Grey Wolf Optimizer for continuous neural-network weight optimization.
 
-    Each wolf is a real-valued vector representing all MLP weights and biases.
-    The best three wolves guide the search:
-    alpha is the best solution, beta is the second best, and delta is the third.
-    This implementation maximizes the provided fitness function.
+    Each wolf is a real-valued vector representing all MLP weights and biases, where the best three wolves 
+    guide the search (replicating a wolf pack's hunting behavior): alpha is the best solution, beta is the second best, 
+    and delta is the third. The rest follow the leader. Also logs history of best fitness per generation
     """
+    # At least 3 wolves are required to function properly (so this is only a safety check for reproducibility)
     if pop_size < 3:
-        raise ValueError("Grey Wolf Optimizer requires pop_size >= 3.")
+        raise ValueError("Grey Wolf Optimizer requires population bigger than 3.")
 
+
+    # Initialize population 
     population = np.array([
         generate_solution(
             n_dimensions,
@@ -37,12 +39,12 @@ def grey_wolf_optimizer(
         for _ in range(pop_size)
     ])
     population = np.clip(population, low, high)
-
     fitnesses = np.array([
         fitness_function(wolf, model, X, y)
         for wolf in population
     ])
 
+    # Sort wolves by fitness to identify alpha, beta and delta
     sorted_indices = np.argsort(fitnesses)[::-1]
     alpha_position = population[sorted_indices[0]].copy()
     beta_position = population[sorted_indices[1]].copy()
@@ -51,8 +53,10 @@ def grey_wolf_optimizer(
     beta_fitness = fitnesses[sorted_indices[1]]
     delta_fitness = fitnesses[sorted_indices[2]]
 
+    # Store history
     history = []
 
+    # Main optimization loop
     for generation in range(generations):
         if generations > 1:
             a = 2 - (2 * generation / (generations - 1))
@@ -61,6 +65,7 @@ def grey_wolf_optimizer(
 
         new_population = []
 
+        # Update each wolf's position based on leaders influence
         for wolf in population:
             # Alpha influence
             r1 = np.random.random(n_dimensions)
@@ -70,7 +75,7 @@ def grey_wolf_optimizer(
             d_alpha = np.abs(c1 * alpha_position - wolf)
             x1 = alpha_position - a1 * d_alpha
 
-            # Beta influence
+            # Beta influence, 
             r1 = np.random.random(n_dimensions)
             r2 = np.random.random(n_dimensions)
             a2 = 2 * a * r1 - a
@@ -87,14 +92,18 @@ def grey_wolf_optimizer(
             x3 = delta_position - a3 * d_delta
 
             new_position = (x1 + x2 + x3) / 3
+
+            # Clip weights back to boundaries in case of explosion
             new_population.append(np.clip(new_position, low, high))
 
+        # Transition to the new generated population
         population = np.array(new_population)
         fitnesses = np.array([
             fitness_function(wolf, model, X, y)
             for wolf in population
         ])
 
+        # Update alpha, beta and delta based on the new fitnesses
         for wolf, fitness in zip(population, fitnesses):
             if fitness > alpha_fitness:
                 delta_position = beta_position.copy()
@@ -116,5 +125,4 @@ def grey_wolf_optimizer(
 
     if verbose:
         print(f"Best Fitness: {alpha_fitness:.4f}")
-
     return alpha_position, alpha_fitness, history

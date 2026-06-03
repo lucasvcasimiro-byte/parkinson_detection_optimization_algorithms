@@ -20,9 +20,9 @@ def tournament_selection(population, fitnesses, tournament_size=3, **kwargs):
 def roulette_wheel_selection(population, fitnesses, **kwargs):
     """
     Selects an individual with a probability proportional to their fitness.
-    Like spinning a roulette wheel where better solutions get bigger slices.
+    Like spinning a roulette wheel where better solutions get bigger slices
     """
-    # Ensure all fitness values are positive for probability calculation
+    # Ensure all fitness values are positive (valid probabilities)
     min_fit = np.min(fitnesses)
     if min_fit < 0:
         adjusted_fitness = fitnesses - min_fit
@@ -109,10 +109,6 @@ def gaussian_mutation(solution, mutation_rate, low=-1, high=1, sigma=0.1, **kwar
         if np.random.rand() < mutation_rate:
             # Add random gaussian noise
             mutated_solution[i] += np.random.normal(0, sigma)
-            
-    # boundary check -------   acho q deviamos apagar estes
-    # Force any exploding weights back inside the [low, high] limits
-    # mutated_solution = np.clip(mutated_solution, low, high)
     
     return mutated_solution
 

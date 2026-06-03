@@ -40,7 +40,8 @@ def generate_solution(n_dimensions, initialization_method = 'uniform', low = -1,
     
     else:
         raise ValueError("Invalid initialization method. Choose 'uniform' or 'normal'.")
-    
+
+
 def vector_to_weights(vector, mlp):
     """
     Converts a flat weight vector into the weights and biases format used by MLPClassifier
