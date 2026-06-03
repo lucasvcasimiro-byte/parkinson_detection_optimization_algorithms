@@ -2,20 +2,17 @@ import numpy as np
 
 
 def grey_wolf_optimizer(
-    generate_solution,
-    fitness_function,
-    n_dimensions,
-    model,
-    X,
-    y,
-    pop_size=50,
-    generations=100,
-    init_method="uniform",
-    low=-1,
-    high=1,
-    verbose=True,
-    **kwargs
-):
+        generate_solution,
+        fitness_function,
+        n_dimensions,
+        model, X, y,
+        pop_size=50,
+        generations=100,
+        init_method="uniform",
+        low=-1,
+        high=1,
+        verbose=True,
+        **kwargs):
     """
     Grey Wolf Optimizer for continuous neural-network weight optimization.
 

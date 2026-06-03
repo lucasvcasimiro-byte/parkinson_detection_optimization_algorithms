@@ -2,17 +2,21 @@ import numpy as np
 from optimization_models.ga_operators import (arithmetic_crossover, gaussian_mutation, tournament_selection)
 
 
-def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, X, y,
-                      pop_size=50, 
-                      generations=100,
-                      crossover_rate=0.8, 
-                      mutation_rate=0.1,
-                      selection_func = None,
-                      crossover_func = None,
-                      mutation_func = None,
-                      init_method = 'uniform',
-                      verbose=False,     # Only used for test runs, set to false for grid search
-                      **kwargs):
+def genetic_algorithm(
+        generate_solution,
+        fitness_function, 
+        n_dimensions, 
+        model, X, y,
+        pop_size=50, 
+        generations=100,
+        crossover_rate=0.8, 
+        mutation_rate=0.1,
+        selection_func = None,
+        crossover_func = None,
+        mutation_func = None,
+        init_method = 'uniform',
+        verbose=False,     # Only used for test runs, set to false for grid search
+        **kwargs):
     """
     Genetic algorithm for continuous neural network weight optimization. Logs history of
     best fitness per generation
