@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.neural_network import MLPClassifier
-from sklearn.metrics import balanced_accuracy_score, confusion_matrix, f1_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, balanced_accuracy_score
 
 def get_network_architecture(chosen_architecture, X, y):
     """
@@ -108,10 +108,11 @@ def evaluate_solution(vector, mlp, X, y):
     mlp.coefs_ = coefs
     mlp.intercepts_ = intercepts
     pred = mlp.predict(X)
-
+    
     return {
-        'weighted_f1': f1_score(y, pred, average='weighted', zero_division=0),
-        'macro_f1': f1_score(y, pred, average='macro', zero_division=0),
-        'balanced_accuracy': balanced_accuracy_score(y, pred),
+        'accuracy': accuracy_score(y, pred),
+        'precision': precision_score(y, pred, zero_division=0),
+        'recall': recall_score(y, pred, zero_division=0),
+        'f1_score': f1_score(y, pred, zero_division=0),
         'confusion_matrix': confusion_matrix(y, pred).tolist(),
     }

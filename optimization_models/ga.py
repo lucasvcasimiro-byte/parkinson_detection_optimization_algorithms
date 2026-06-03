@@ -51,7 +51,7 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
         new_population = []
         
 
-        # Elitism
+        # Elitism, passing best results directly into the next generation
         new_population.append(best_solution.copy())
         
         while len(new_population) < pop_size:

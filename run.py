@@ -26,14 +26,10 @@ from utils import evaluate_solution, fitness_function, generate_solution, get_ne
 # Shared helpers
 # ---------------------------------------------------------------------------
 
-def _load_data(test_size=0.2, random_state=42):
-    """
-    Loads and splits the Parkinson's dataset
-    """
-    parkinson = pd.read_csv('data/parkinsons_preprocessed.csv')
-    X = parkinson.drop('status', axis=1).values
-    y = parkinson['status'].values
-    return train_test_split(X, y, test_size=test_size, random_state=random_state, stratify=y)
+parkinson = pd.read_csv('data/parkinsons_preprocessed.csv')
+X = parkinson.drop('status', axis=1).values
+y = parkinson['status'].values
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 
 # ---------------------------------------------------------------------------
@@ -60,16 +56,16 @@ def run_ga_experiment(
     """
     Runs the Genetic Algorithm to optimize the weights of an MLPClassifier.
     """
-    X_train, X_test, y_train, y_test = _load_data(test_size, random_state)
-    model, n_dimensions = get_network_architecture(chosen_architecture, X_train, y_train)
+    X_train_ga, X_test_ga, y_train_ga, y_test_ga = X_train.copy(), X_test.copy(), y_train.copy(), y_test.copy()
+    model, n_dimensions = get_network_architecture(chosen_architecture, X_train_ga, y_train_ga)
 
     best_solution, best_fitness, history = genetic_algorithm(
         generate_solution=generate_solution,
         fitness_function=fitness_function,
         n_dimensions=n_dimensions,
         model=model,
-        X=X_train,
-        y=y_train,
+        X=X_train_ga,
+        y=y_train_ga,
         pop_size=pop_size,
         generations=generations,
         crossover_rate=crossover_rate,
@@ -85,7 +81,7 @@ def run_ga_experiment(
         verbose=verbose,
     )
 
-    test_metrics = evaluate_solution(best_solution, model, X_test, y_test)
+    test_metrics = evaluate_solution(best_solution, model, X_test_ga, y_test_ga)
 
     if verbose:
         print("Test metrics:")
@@ -112,16 +108,16 @@ def run_gwo_experiment(
     """
     Runs the Grey Wolf Optimizer to optimize the weights of an MLPClassifier.
     """
-    X_train, X_test, y_train, y_test = _load_data(test_size, random_state)
-    model, n_dimensions = get_network_architecture(chosen_architecture, X_train, y_train)
+    X_train_gwo, X_test_gwo, y_train_gwo, y_test_gwo = X_train.copy(), X_test.copy(), y_train.copy(), y_test.copy()
+    model, n_dimensions = get_network_architecture(chosen_architecture, X_train_gwo, y_train_gwo)
 
     best_solution, best_fitness, history = grey_wolf_optimizer(
         generate_solution=generate_solution,
         fitness_function=fitness_function,
         n_dimensions=n_dimensions,
         model=model,
-        X=X_train,
-        y=y_train,
+        X=X_train_gwo,
+        y=y_train_gwo,
         pop_size=pop_size,
         generations=generations,
         init_method=init_method,
@@ -130,7 +126,7 @@ def run_gwo_experiment(
         verbose=verbose,
     )
 
-    test_metrics = evaluate_solution(best_solution, model, X_test, y_test)
+    test_metrics = evaluate_solution(best_solution, model, X_test_gwo, y_test_gwo)
 
     if verbose:
         print("Test metrics:")
