@@ -1,5 +1,11 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import copy
 import pandas as pd
 import numpy as np
+from scipy.stats import ttest_ind
 from sklearn.model_selection import train_test_split
 
 from optimization_models.ga import genetic_algorithm
@@ -16,26 +22,30 @@ y = df['status'].values
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
 # Build network with the best architecture found in the grid search
-model, n_dimensions = get_network_architecture((10,), X_train, y_train)
+model, n_dimensions = get_network_architecture((20,), X_train, y_train)
 
 # GA vs GWO comparison
 ga_f1s, ga_accs, ga_precs, ga_recs = [], [], [], []
 gwo_f1s, gwo_accs, gwo_precs, gwo_recs = [], [], [], []
 
 for _ in range(30):
+    # Deepcopy the base model for each run so that in-place weight mutations
+    # from one algorithm's fitness evaluations don't contaminate the other's
+    ga_model  = copy.deepcopy(model)
+    gwo_model = copy.deepcopy(model)
 
-    # GA run — using the best operators from the grid search
+    # GA run 
     best_ga, _, _ = genetic_algorithm(
         generate_solution=generate_solution,
         fitness_function=fitness_function,
         n_dimensions=n_dimensions,
-        model=model,
+        model=ga_model,
         X=X_train,
         y=y_train,
         pop_size=50,
         generations=100,
 
-        # Best combination from the grid search, and also the better performing operators on average
+        # Best combination from the grid search
         selection_func=tournament_selection,           
         crossover_func=arithmetic_crossover,      
         mutation_func=uniform_continuous_mutation, 
@@ -48,7 +58,7 @@ for _ in range(30):
         generate_solution=generate_solution,
         fitness_function=fitness_function,
         n_dimensions=n_dimensions,
-        model=model,
+        model=gwo_model,
         X=X_train,
         y=y_train,
         pop_size=50,
@@ -56,8 +66,8 @@ for _ in range(30):
         verbose=False,
     )
 
-    ga_metrics  = evaluate_solution(best_ga,  model, X_test, y_test)
-    gwo_metrics = evaluate_solution(gwo, model, X_test, y_test)
+    ga_metrics  = evaluate_solution(best_ga, ga_model,  X_test, y_test)
+    gwo_metrics = evaluate_solution(gwo,     gwo_model, X_test, y_test)
 
     ga_f1s.append(ga_metrics['f1_score'])   
     ga_accs.append(ga_metrics['accuracy'])
@@ -70,7 +80,7 @@ for _ in range(30):
     gwo_recs.append(gwo_metrics['recall'])
 
 
-# Summary table
+# Summary table 
 print('Summary (30 runs)')
 print(f"{'Metric':<15} {'GA Mean':>10} {'GA Std':>10} {'GWO Mean':>10} {'GWO Std':>10}")
 print('-' * 60)
@@ -81,6 +91,17 @@ for metric, ga_vals, gwo_vals in [
     ('Recall',    ga_recs,  gwo_recs),
 ]:
     print(f"{metric:<15} {np.mean(ga_vals):>10.4f} {np.std(ga_vals):>10.4f} {np.mean(gwo_vals):>10.4f} {np.std(gwo_vals):>10.4f}")
+
+
+# Statistical significance test (Independent T-Test) on f1-scores
+# Compares the means of two independent samples, like the Student's T-test from the econometrics course, but assuming unequal variances 
+stat, p_value = ttest_ind(ga_f1s, gwo_f1s, equal_var=False)
+
+print(f"\nIndependent T-Test (F1-Score): t={stat:.2f}, p={p_value:.4f}")
+if p_value < 0.05:
+    print("Statistical significant difference between GA and GWO (p < 0.05)")
+else:
+    print("No statistical significant difference between GA and GWO (p >= 0.05)")
 
 # Save results to CSV
 results = []

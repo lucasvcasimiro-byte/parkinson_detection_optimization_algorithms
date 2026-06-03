@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -17,8 +21,11 @@ y = df['status'].values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-
+"""
 # Don't run this, it takes some time, 30 iterations for statistical significance
+
+
+
 # Grid search over operators and initialization methods
 architectures = [(10,), (20,), (10, 5)] # 1-layer and 2-layer examples
 selections   = [tournament_selection, roulette_wheel_selection]
@@ -88,3 +95,4 @@ for arch in architectures:
                     
 
 pd.DataFrame(results).to_csv('results/csv/ga_grid_search.csv', index=False)
+"""

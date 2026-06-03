@@ -85,20 +85,28 @@ def vector_to_weights(vector, mlp):
 def fitness_function(vector, mlp, X, y):
     """
     Given a weight vector, loads the weights into the network, runs
-    predictions on the dataset and returns the number of correct predictions as the fitness score
+    predictions on the dataset and returns the f1-score as the fitness score
+    to deal with the datasets imbalance
+
+    Instead of the f1-score function from sklearn, a lightweight version with only
+    numpy was made to reduce computation cost and time
     """
     # Convert flat vector to weights and biases
     coefs, intercepts = vector_to_weights(vector, mlp)
-    
+
     # Insert weights into mlp and predict
     mlp.coefs_ = coefs
     mlp.intercepts_ = intercepts
     pred = mlp.predict(X)
-    
-    # Calculate ammount of correct predictions (maximization problem)
-    correct = sum(1 for p, t in zip(pred, y) if p == t)
-    return correct
 
+    # Fast binary F1 
+    tp = np.sum((pred == 1) & (y == 1))
+    fp = np.sum((pred == 1) & (y == 0))
+    fn = np.sum((pred == 0) & (y == 1))
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    return (2 * precision * recall / (precision + recall)
+            if (precision + recall) > 0 else 0.0)
 
 
 def evaluate_solution(vector, mlp, X, y):
