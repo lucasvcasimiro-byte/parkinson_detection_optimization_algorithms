@@ -15,7 +15,7 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
                       **kwargs):
     """
     Genetic Algorithm for continuous neural network weight optimization. Logs history of
-    best fitness per generation.
+    best fitness per generation
     """
     if selection_func is None:
         selection_func = tournament_selection
@@ -31,7 +31,7 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
     population = np.array([generate_solution(n_dimensions, initialization_method=init_method, low=low, high=high) for _ in range(pop_size)])
     fitnesses = np.array([fitness_function(individual, model, X, y) for individual in population])
     
-    # Evolutionary tracking variables
+    # Tracking variables
     best_solution = None
     best_fitness = -float('inf')
     history = []
@@ -50,7 +50,8 @@ def genetic_algorithm(generate_solution, fitness_function, n_dimensions, model, 
         # Create next generation
         new_population = []
         
-        # Elitism: Directly protect and preserve the best configuration found so far
+
+        # Elitism, passing best results directly into the next generation
         new_population.append(best_solution.copy())
         
         while len(new_population) < pop_size:
