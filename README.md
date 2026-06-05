@@ -13,6 +13,7 @@ pip install -r requirements.txt
 ```
 
 | Package | Version |
+
 |---|---|
 | `numpy` | ≥ 1.22.0 |
 | `pandas` | ≥ 1.4.0 |
@@ -21,13 +22,11 @@ pip install -r requirements.txt
 | `matplotlib` | ≥ 3.5.0 |
 | `seaborn` | ≥ 0.11.0 |
 
-Python **3.9+** is recommended.
-
 ---
 
 ## Project Structure
 
-```
+```bash
 optimization_algorithms/
 │
 ├── data/
@@ -42,11 +41,11 @@ optimization_algorithms/
 ├── main/
 │   ├── __init__.py
 │   ├── utils.py                           # Shared utilities (fitness_function, generate_solution, …)
+│   ├── eda.py                             # Class distribution analysis
 │   ├── grid_search.py                     # GA operator & architecture grid search
 │   ├── compare.py                         # GA vs GWO comparison (30 runs + statistical test)
-│   ├── visualizations_grid_search.py      # Plots from grid search results
-│   ├── visualizations_compare.py          # Plots from GA vs GWO comparison results
-│   └── visualizations.py                  # Convenience wrapper — runs both plot scripts at once
+│   ├── grid_search_visualizations.py      # Plots from grid search results
+│   └── compare_visualizations.py          # Plots from GA vs GWO comparison results
 │
 ├── results/
 │   ├── csv/                               # Auto-generated output CSVs
@@ -64,7 +63,21 @@ optimization_algorithms/
 
 ## How to Run
 
-### Step 1 — GA Operator Grid Search *(long, run once)*
+### Step 1 — Exploratory Data Analysis
+
+Generates the class distribution plot to understand dataset balance before optimization.
+
+```bash
+python -m main.eda
+```
+
+Produces:
+
+- `results/visualizations/class_distribution.png` — dataset class balance
+
+---
+
+### Step 2 — GA Operator Grid Search *(long, don't run again)*
 
 Evaluates all combinations of architecture × initialization method × selection × crossover × mutation operators, each over 30 independent runs. Saves results to `results/csv/ga_grid_search.csv`.
 
@@ -72,34 +85,34 @@ Evaluates all combinations of architecture × initialization method × selection
 python -m main.grid_search
 ```
 
-> ⏱ Expected runtime: **~60–120 minutes** depending on hardware.
+> Expected runtime: **~60–120 minutes**
 
 ---
 
-### Step 2 — Inspect Grid Search Results
+### Step 3 — Inspect Grid Search Results
 
 Generates plots from the grid search CSV so you can identify the best-performing operator configuration before running the final comparison.
 
 ```bash
-python -m main.visualizations_grid_search
+python -m main.grid_search_visualizations
 ```
 
 Produces:
-- `results/visualizations/class_distribution.png` — dataset class balance
+
 - `results/visualizations/grid_search_top10.png` — top 10 configurations by F1-score
 - `results/visualizations/grid_search_operators_avg.png` — average F1 per selection / crossover / mutation method
 
 ---
 
-### Step 3 — GA vs GWO Comparison
+### Step 4 — GA vs GWO Comparison
 
-Runs both algorithms 30 times each using the best configuration identified in Step 2, prints a summary table with mean ± std for F1-Score, Accuracy, Precision and Recall, and performs a **Mann-Whitney U statistical significance test** on the F1 distributions. Saves per-run results to `results/csv/ga_vs_gwo.csv`.
+Runs both algorithms 30 times each using the best configuration identified in Step 3, prints a summary table with mean ± std for F1-Score, Accuracy, Precision and Recall, and performs an **Independent T-Test statistical significance test** on the F1 distributions. Saves per-run results to `results/csv/ga_vs_gwo.csv`.
 
 ```bash
 python -m main.compare
 ```
 
-> ⏱ Expected runtime: **~15–25 minutes** depending on hardware.
+> Expected runtime: **~5 minutes**
 
 ---
 
@@ -108,19 +121,10 @@ python -m main.compare
 Generates the GA vs GWO comparison plots from the CSV produced in Step 3.
 
 ```bash
-python -m main.visualizations_compare
+python -m main.compare_visualizations
 ```
 
 Produces:
+
 - `results/visualizations/ga_vs_gwo_boxplot.png` — F1-score distribution across 30 runs
 - `results/visualizations/ga_vs_gwo_metrics.png` — mean Accuracy, Precision, Recall, F1 side by side
-
----
-
-### All visualizations at once *(after Steps 1–3 are complete)*
-
-```bash
-python -m main.visualizations
-```
-
----
