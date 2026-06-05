@@ -27,7 +27,7 @@ pip install -r requirements.txt
 ## Project Structure
 
 ```bash
-optimization_algorithms/
+parkinson_detection_optimization_algorithms/
 │
 ├── data/
 │   └── parkinsons_preprocessed.csv       # Standardised Parkinson's dataset
@@ -57,7 +57,7 @@ optimization_algorithms/
 └── README.md
 ```
 
-> **Important:** all scripts must be run from the **project root directory** (i.e., inside `optimization_algorithms/`) using the `-m` flag, as shown below.
+> **Important:** all scripts must be run from the **project root directory** (i.e., inside `parkinson_detection_optimization_algorithms/`) using the `-m` flag, as shown below.
 
 ---
 
