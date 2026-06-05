@@ -2,6 +2,7 @@
 
 Population-based optimization of a Multi-Layer Perceptron (MLP) classifier for the Oxford Parkinson's Disease Detection dataset using a **Genetic Algorithm (GA)** and a **Grey Wolf Optimizer (GWO)**.
 
+Note: Consider that the README.md was created for the GitHub workflow. With only the files, the project root directory is simply the name of the folder.
 ---
 
 ## Dependencies
@@ -57,7 +58,7 @@ parkinson_detection_optimization_algorithms/
 └── README.md
 ```
 
-> **Important:** all scripts must be run from the **project root directory** (i.e., inside `parkinson_detection_optimization_algorithms/`) using the `-m` flag, as shown below.
+> **Important:** all scripts must be run from the **project root directory** using the `-m` flag, as shown below.
 
 ---
 
